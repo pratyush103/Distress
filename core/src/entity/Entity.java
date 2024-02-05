@@ -1,5 +1,92 @@
 package entity;
-import com.project.distress.*;
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.math.MathUtils;
 public class Entity {
-    float speed, x, y;
+    Sprite sprite;
+    float x,y;
+    SpriteBatch batch;
+    Body body;
+    /**
+     * Represents an entity in the game world.
+     * An entity has a position, a sprite, and a physical body.
+     */
+    public Entity(Texture texture, float posX,float posY, World world, boolean isDynamic){
+        x=posX;
+        y=posY;
+        sprite= new Sprite(texture);
+        sprite.setPosition(x,y);
+
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = isDynamic? (BodyDef.BodyType.DynamicBody):(BodyDef.BodyType.StaticBody); // Change to StaticBody for immovable objects
+        bodyDef.position.set(x, y);
+
+        body = world.createBody(bodyDef);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(sprite.getWidth() / 2, sprite.getHeight() / 2);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 1f;
+
+        body.createFixture(fixtureDef);
+
+        shape.dispose();
+    }
+    
+    public void draw(SpriteBatch batch, float x, float y) {
+       
+        float bodyX = body.getPosition().x - sprite.getWidth() / 2;
+        float bodyY = body.getPosition().y - sprite.getHeight() / 2;
+
+        batch.draw(sprite, bodyX, bodyY, sprite.getWidth() / 2, sprite.getHeight() / 2, 
+                   sprite.getWidth(), sprite.getHeight(), 1, 1, 
+                   MathUtils.radiansToDegrees * body.getAngle());
+    }
+
+    public float getX() {
+        return sprite.getX();
+    }
+
+    public float getY() {
+        return sprite.getY();
+    }
+
+    public float getWidth() {
+        return sprite.getWidth();
+    }
+
+    public float getHeight() {
+        return sprite.getHeight();
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    public void setWidth(float width) {
+        sprite.setSize(width, sprite.getHeight());
+    }
+
+    public void setHeight(float height) {
+        sprite.setSize(sprite.getWidth(), height);
+    }
+
+    public void dispose() {
+        sprite.getTexture().dispose();
+    }
+
+    //float speed, x, y;
 }
