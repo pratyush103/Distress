@@ -12,6 +12,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.World;
@@ -25,15 +26,16 @@ public class Player extends Entity{
 	Color color;
 	Label.LabelStyle labelStyle;
 	Label label;
+    Vector2 position;
     Texture playerTexture = new Texture("idle.png");
     public Player(Texture playerTexture,float viewWidth, float viewHeight, World world){
         
         
         super(playerTexture, 0, 0, world, true);
-        super.sprite.setPosition(viewWidth / 2 - super.getWidth() / 2, viewHeight / 2 - super.getHeight() / 2);
-		playerX = viewWidth / 2 - super.getWidth() / 2;
-		playerY = viewHeight / 2 - super.getHeight() / 2;
-        playerSpeed = 5f;
+		playerX = scaleToWorld(viewWidth / 2 - super.getWidth() / 2);
+		playerY = scaleToWorld(viewHeight / 2 - super.getHeight() / 2);
+        super.sprite.setPosition(playerX, playerY);
+        playerSpeed = 100;
         playerHealth = 100;
         font = new BitmapFont();
         color = Color.WHITE;
@@ -50,27 +52,38 @@ public class Player extends Entity{
 
     }
     public void move(){
+        position = body.getPosition();
+        
         if(Gdx.input.isKeyPressed(Input.Keys.W)){
-            playerY += playerSpeed;
-            //body.applyForceToCenter(0, playerSpeed, true);
+            //playerY += playerSpeed;
+            body.setLinearVelocity(body.getLinearVelocity().x, playerSpeed);
+            playerY=position.y;
+            //System.out.println(position.x + " " + position.y);
+            
         }
         if(Gdx.input.isKeyPressed(Input.Keys.S)){
-            playerY -= playerSpeed;
-            //body.applyForceToCenter(0, -playerSpeed, true);
+            //playerY -= playerSpeed;
+            body.setLinearVelocity(body.getLinearVelocity().x, -playerSpeed);
+            playerY=position.y;
+            //System.out.println(position.x + " " + position.y);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.A)){
-            playerX -= playerSpeed;
-            //body.applyForceToCenter(-playerSpeed, 0, true);
+            //playerX -= playerSpeed;
+            body.setLinearVelocity(-playerSpeed, body.getLinearVelocity().y);
+            playerX=position.x;
+            //System.out.println(position.x + " " + position.y);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.D)){
-            playerX += playerSpeed;
-            //body.applyForceToCenter(playerSpeed, 0, true);
+            //playerX += playerSpeed;
+            body.setLinearVelocity(playerSpeed, body.getLinearVelocity().y);
+            playerX=position.x;
+            //System.out.println(position.x + " " + position.y);
         }
     
     }
     public void update(){
         move();
-        body.setTransform(playerX, playerY, body.getAngle());
+        body.setTransform(playerX, playerY, 0);
         label.setText(playerX + "," + playerY);
         label.setPosition(playerX, playerY);
     }
@@ -90,5 +103,9 @@ public class Player extends Entity{
     public float getPlayerSpeed(){
         return playerSpeed;
     }
+    public Vector2 getPosition(){
+        return position;
+    }
+
 
 }

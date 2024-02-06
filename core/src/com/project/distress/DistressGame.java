@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -41,6 +43,8 @@ public class DistressGame extends ApplicationAdapter {
 	Label label;
 	OrthographicCamera cam;
 	Box2DDebugRenderer debugRenderer;
+	FitViewport viewport;
+	private float scale = 0.1f;
 
 	@Override
 	public void create() {
@@ -62,8 +66,8 @@ public class DistressGame extends ApplicationAdapter {
 			public void preSolve(Contact contact, Manifold oldManifold) {
 				System.out.println("Pre Solve");
 				contact.setEnabled(true);
-				contact.setFriction(0.5f); // Change the friction
-				contact.setRestitution(1.0f); // Change the restitution
+				contact.setFriction(scale*0.5f); // Change the friction
+				contact.setRestitution(scale); // Change the restitution
 			}
 
 			@Override
@@ -83,15 +87,23 @@ public class DistressGame extends ApplicationAdapter {
 		player = new Player(playTexture, viewWidth, viewHeight, world);
 
 		whoTexture= new Texture("move.png");
-		entity = new Entity(whoTexture, 3, 4, world, false);
+		entity = new Entity(whoTexture, scaleToWorld(3), scaleToWorld(4), world, false);
 		
 		//player = new Sprite(new Texture("idle.png"));
 		//player.setPosition(viewWidth / 2 - player.getWidth() / 2, viewHeight / 2 - player.getHeight() / 2);
 		//playerX = viewWidth / 2 - player.getWidth() / 2;
 		//playerY = viewHeight / 2 - player.getHeight() / 2;
 
+		
+
 		cam = new OrthographicCamera(viewWidth, viewHeight);
-		cam.position.set(viewWidth / 2f, viewHeight / 2f, 0);
+		
+		viewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), cam);
+        viewport.apply();
+
+		cam.zoom = scale;
+		//cam.position.set((viewWidth / 2f)*scale, (viewHeight / 2f)*scale, 0);
+		
 		cam.update();
 
 		tile = new Texture("tile.png");
@@ -108,43 +120,71 @@ public class DistressGame extends ApplicationAdapter {
 	@Override
 	public void render() {
 		player.update();
-		world.step(Gdx.graphics.getDeltaTime(), 6, 2);
+		world.step((Gdx.graphics.getDeltaTime()*5f), 6, 2);
 		handleInput();
+		cam.position.set(player.getPosition().x, player.getPosition().y, 0);
 		cam.update();
 		ScreenUtils.clear(0, 0, 0, 1);
 
 		debugRenderer.render(world, cam.combined);
+
 		batch.setProjectionMatrix(cam.combined);
 		batch.begin();
 
 		// Draw the repeating tile to fill the screen
-		batch.draw(tile, bgX, bgY, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		batch.draw(tile, 0, 0, Gdx.graphics.getWidth()*scale, Gdx.graphics.getHeight()*scale);
 
 		// Draw the player at the center of the screen
 		player.draw(batch);
-		entity.draw(batch, 3, 4);
+		entity.draw(batch, 0, 0);
 
 		batch.end();
 	}
 
+	private void scaleSprites(Sprite sprite) {
+        sprite.setScale(scale);
+    }
+
+	private Vector2 screenToWorldCoordinates(float screenX, float screenY) {
+        Vector3 worldCoordinates = cam.unproject(new Vector3(screenX, screenY, 0));
+        return new Vector2(worldCoordinates.x * scale, worldCoordinates.y * scale);
+    }
+
+	private float scaleToWorld(float value) {
+		return value * scale;
+	}
+	
 	private void handleInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			//playerY += playerSpeed;
-			cam.translate(0, (player.getPlayerSpeed()), 0);
+			//cam.translate(0, (player.getPlayerSpeed()), 0);
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.S)) {
 			//playerY -= playerSpeed;
-			cam.translate(0, -(player.getPlayerSpeed()), 0);
+			//cam.translate(0, -(player.getPlayerSpeed()), 0);
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.A)) {
 			//playerX -= playerSpeed;
-			cam.translate(-(player.getPlayerSpeed()), 0, 0);
+			//cam.translate(-(player.getPlayerSpeed()), 0, 0);
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.D)) {
 			//playerX += playerSpeed;
-			cam.translate((player.getPlayerSpeed()), 0, 0);
+			//cam.translate((player.getPlayerSpeed()), 0, 0);
 		}
-		//label.setText(playerX + "," + playerY);
+		//label.setText(playerX + "," a+ playerY);
+		if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
+			pause();
+			cam.zoom = scale;
+		}
+		if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
+			resume();
+		}
+		if(Gdx.input.isKeyPressed(Input.Keys.NUMPAD_SUBTRACT)){
+			cam.zoom += 0.02;
+		}
+		if(Gdx.input.isKeyPressed(Input.Keys.NUMPAD_ADD)){
+			cam.zoom -= 0.02;
+		}
 	}
 
 	@Override

@@ -15,6 +15,7 @@ public class Entity {
     float x,y;
     SpriteBatch batch;
     Body body;
+    private float scale = 0.1f;
     /**
      * Represents an entity in the game world.
      * An entity has a position, a sprite, and a physical body.
@@ -24,6 +25,7 @@ public class Entity {
         y=posY;
         sprite= new Sprite(texture);
         sprite.setPosition(x,y);
+        sprite.setScale(scale);
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = isDynamic? (BodyDef.BodyType.DynamicBody):(BodyDef.BodyType.StaticBody); // Change to StaticBody for immovable objects
@@ -31,7 +33,7 @@ public class Entity {
 
         body = world.createBody(bodyDef);
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(sprite.getWidth() / 2, sprite.getHeight() / 2);
+        shape.setAsBox((sprite.getWidth()*scale) / 2, (sprite.getHeight()*scale) / 2);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -44,11 +46,11 @@ public class Entity {
     
     public void draw(SpriteBatch batch, float x, float y) {
        
-        float bodyX = body.getPosition().x - sprite.getWidth() / 2;
-        float bodyY = body.getPosition().y - sprite.getHeight() / 2;
+        float bodyX = body.getPosition().x - (sprite.getWidth()) / 2;
+        float bodyY = body.getPosition().y - (sprite.getHeight()) / 2;
 
         batch.draw(sprite, bodyX, bodyY, sprite.getWidth() / 2, sprite.getHeight() / 2, 
-                   sprite.getWidth(), sprite.getHeight(), 1, 1, 
+                   sprite.getWidth(), sprite.getHeight(), scale, scale, 
                    MathUtils.radiansToDegrees * body.getAngle());
     }
 
@@ -87,6 +89,9 @@ public class Entity {
     public void dispose() {
         sprite.getTexture().dispose();
     }
+    public float scaleToWorld(float value) {
+		return value * scale;
+	}
 
     //float speed, x, y;
 }
