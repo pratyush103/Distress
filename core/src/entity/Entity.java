@@ -10,17 +10,19 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.math.MathUtils;
+import java.util.HashMap;
 public class Entity {
     Sprite sprite;
     float x,y;
     SpriteBatch batch;
     Body body;
-    private float scale = 0.1f;
+    private float scale = 0.3f;
+    public static HashMap<String, Entity> entityList = new HashMap<String, Entity>();
     /**
      * Represents an entity in the game world.
      * An entity has a position, a sprite, and a physical body.
      */
-    public Entity(Texture texture, float posX,float posY, World world, boolean isDynamic){
+    public Entity(Texture texture, float posX,float posY, World world, boolean isDynamic,String entityName){
         x=posX;
         y=posY;
         sprite= new Sprite(texture);
@@ -40,6 +42,8 @@ public class Entity {
         fixtureDef.density = 1f;
 
         body.createFixture(fixtureDef);
+        body.setUserData(entityName);
+        entityList.put(entityName, this);
 
         shape.dispose();
     }
@@ -92,6 +96,20 @@ public class Entity {
     public float scaleToWorld(float value) {
 		return value * scale;
 	}
+    public void CollisionHandler(Entity entity){
+        //Override this method in the subclass
+        //*Contains a useful piece of code */
+        System.out.println("Collision detected with " + entity.getClass().getName());
+    }
+
+    public static Entity getEntity(String entityName){
+        return entityList.get(entityName);
+    }
+    public static void removeEntity(String entityName){
+        entityList.remove(entityName);
+
+    }
+    
 
     //float speed, x, y;
 }

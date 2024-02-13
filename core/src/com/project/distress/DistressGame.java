@@ -1,5 +1,8 @@
 package com.project.distress;
 
+import java.util.ArrayList;
+import java.util.Vector;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -24,13 +27,16 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import entity.*;
+import Screens.*;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.utils.TimeUtils;
 
 
 public class DistressGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture tile;
 	Texture playTexture;
-
+	private long startTime;
 	Texture whoTexture;
 	World world;
 	Player player;
@@ -44,22 +50,40 @@ public class DistressGame extends ApplicationAdapter {
 	OrthographicCamera cam;
 	Box2DDebugRenderer debugRenderer;
 	FitViewport viewport;
-	private float scale = 0.1f;
+	private float scale = 0.3f;
+	ArrayList <String> CollisionList= new ArrayList<String>(2);
+	long elapsedTime;
+	float elapsedTimeInSeconds;
+	HUD hud;
+	
 
 	@Override
 	public void create() {
-
+		Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+		startTime = TimeUtils.millis();
 		Box2D.init();
         world = new World(new Vector2(0, 0), false);
 		world.setContactListener(new ContactListener() {
 			@Override
 			public void beginContact(Contact contact) {
+				Body a = contact.getFixtureA().getBody();
+				Body b = contact.getFixtureB().getBody();
+				String aName = (String) a.getUserData();
+				String bName = (String) b.getUserData();
+				if (aName != null && bName != null) {
+					CollisionList.add(aName);
+					CollisionList.add(bName);
+					//System.out.println(CollisionList.get(0));
+				}
+				
+
 				System.out.println("Contact");
 			}
 
 			@Override
 			public void endContact(Contact contact) {
 				System.out.println("End Contact");
+				CollisionList.clear();
 			}
 
 			@Override
@@ -68,6 +92,7 @@ public class DistressGame extends ApplicationAdapter {
 				contact.setEnabled(true);
 				contact.setFriction(scale*0.5f); // Change the friction
 				contact.setRestitution(scale); // Change the restitution
+				handleCollision();
 			}
 
 			@Override
@@ -87,7 +112,7 @@ public class DistressGame extends ApplicationAdapter {
 		player = new Player(playTexture, viewWidth, viewHeight, world);
 
 		whoTexture= new Texture("move.png");
-		entity = new Entity(whoTexture, scaleToWorld(3), scaleToWorld(4), world, false);
+		entity = new Entity(whoTexture, scaleToWorld(3), scaleToWorld(4), world, false, "NullEntity");
 		
 		//player = new Sprite(new Texture("idle.png"));
 		//player.setPosition(viewWidth / 2 - player.getWidth() / 2, viewHeight / 2 - player.getHeight() / 2);
@@ -102,9 +127,11 @@ public class DistressGame extends ApplicationAdapter {
         viewport.apply();
 
 		cam.zoom = scale;
-		//cam.position.set((viewWidth / 2f)*scale, (viewHeight / 2f)*scale, 0);
+		cam.position.set((viewWidth / 2f)*scale, (viewHeight / 2f)*scale, 0);
 		
 		cam.update();
+
+		
 
 		tile = new Texture("tile.png");
 		
@@ -115,19 +142,28 @@ public class DistressGame extends ApplicationAdapter {
 		labelStyle = new Label.LabelStyle();
 		labelStyle.font = font;
 		labelStyle.fontColor = color;
+		hud = new HUD(batch, player);
 	}
+	
 
 	@Override
 	public void render() {
-		player.update();
-		world.step((Gdx.graphics.getDeltaTime()*5f), 6, 2);
+		world.step((Gdx.graphics.getDeltaTime()), 6, 2);
+		elapsedTime = TimeUtils.timeSinceMillis(startTime);
+		elapsedTimeInSeconds = elapsedTime / 1000f;
+		
+
 		handleInput();
-		cam.position.set(player.getPosition().x, player.getPosition().y, 0);
+		player.update();
+		
+
+		cam.position.set(Math.round(player.getPosition().x), Math.round(player.getPosition().y), 0);
 		cam.update();
+		
 		ScreenUtils.clear(0, 0, 0, 1);
-
-		debugRenderer.render(world, cam.combined);
-
+		
+		//TODO: When Adding Tile Map tilemap->batch->debugRenderer->hud
+		
 		batch.setProjectionMatrix(cam.combined);
 		batch.begin();
 
@@ -137,8 +173,9 @@ public class DistressGame extends ApplicationAdapter {
 		// Draw the player at the center of the screen
 		player.draw(batch);
 		entity.draw(batch, 0, 0);
-
 		batch.end();
+		debugRenderer.render(world, cam.combined);
+		hud.update((int) elapsedTimeInSeconds);
 	}
 
 	private void scaleSprites(Sprite sprite) {
@@ -150,9 +187,31 @@ public class DistressGame extends ApplicationAdapter {
         return new Vector2(worldCoordinates.x * scale, worldCoordinates.y * scale);
     }
 
+	void handleCollision() {
+		int i = 0;
+		int j= CollisionList.size()-1;
+		Entity entity1;
+		Entity entity2;
+
+		while (i<= CollisionList.size()-1 && j>=0){
+			try {
+				entity1= Entity.getEntity(CollisionList.get(i));
+				entity2= Entity.getEntity(CollisionList.get(j));
+
+				entity1.CollisionHandler(entity2);
+			} catch (Exception e) {
+				
+				continue;
+			}
+			i++;
+			j--;
+		}
+	}
+
 	private float scaleToWorld(float value) {
 		return value * scale;
 	}
+	
 	
 	private void handleInput() {
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
@@ -175,6 +234,9 @@ public class DistressGame extends ApplicationAdapter {
 		if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
 			pause();
 			cam.zoom = scale;
+			int width = Gdx.graphics.getWidth()-2; // Set this to your desired window width
+			int height = Gdx.graphics.getHeight()-2; 
+			Gdx.graphics.setWindowedMode(width, height);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
 			resume();
@@ -184,6 +246,9 @@ public class DistressGame extends ApplicationAdapter {
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.NUMPAD_ADD)){
 			cam.zoom -= 0.02;
+		}
+		if(Gdx.input.isKeyPressed(Input.Keys.F11)){
+			Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 		}
 	}
 
@@ -207,8 +272,10 @@ public class DistressGame extends ApplicationAdapter {
 	@Override
 	public void resize(int width, int height) {
 		super.resize(width, height);
+		viewport.update(width, height);
 		cam.viewportWidth = width;
 		cam.viewportHeight = height;
+		cam.setToOrtho(false, width, height);
 		cam.update();
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 	}
