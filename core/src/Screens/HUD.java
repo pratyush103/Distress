@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import entity.*;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 
 public class HUD {
     public Stage stage;
@@ -24,6 +25,7 @@ public class HUD {
     Label playerPositionLabel; 
     Table table;
     private Player player;
+    Vector2 playerPosition;
     
 
     public HUD(SpriteBatch batch, Player player){
@@ -41,15 +43,23 @@ public class HUD {
         style.font = font;
         style.fontColor = Color.WHITE;
 
+
         
         scoreLabel = new Label(String.valueOf(player.getScore()), style);
         timeLabel = new Label("0:00", style);
         playerHealthLabel = new Label(String.valueOf(player.getPlayerHealth())+"/100", style);
-        //playerPositionLabel = new Label((String.valueOf(player.getPosition().x)+","+(String.valueOf(player.getPosition().y))), style);
+        playerPositionLabel = new Label(
+                                        (
+                                        String.valueOf(Math.round(player.getPosition().x))+
+                                        ","+
+                                        String.valueOf(Math.round(player.getPosition().y))
+                                        ), 
+                                        style
+                                        );
         table.add(scoreLabel).expandX().padTop(10);
         table.add(timeLabel).expandX().padTop(10);
         table.add(playerHealthLabel).expandX().padTop(10);
-        table.add(playerPositionLabel).expandX().padTop(10);
+        table.add(playerPositionLabel).expandX().padBottom(10);
         stage.addActor(table);
 
 
@@ -59,10 +69,16 @@ public class HUD {
         stage.draw();
     }
     public void update(int dt){
+        int minutes = (int) (dt / 60);
+		int seconds = (int) (dt % 60);
+		
+		
+
+
         scoreLabel.setText(String.valueOf(player.getScore()));
         playerHealthLabel.setText(String.valueOf(player.getPlayerHealth())+"/100");
-        //playerPositionLabel.setText((String.valueOf(player.getPosition().x)+","+(String.valueOf(player.getPosition().y))));
-        timeLabel.setText(String.valueOf(dt));
+        playerPositionLabel.setText((String.valueOf(Math.round(player.getPosition().x))+","+(String.valueOf(Math.round(player.getPosition().y)))));
+        timeLabel.setText(String.valueOf(minutes)+":"+String.valueOf(seconds));
         draw();
     }
 }

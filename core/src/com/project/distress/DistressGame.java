@@ -41,6 +41,10 @@ public class DistressGame extends ApplicationAdapter {
 	World world;
 	Player player;
 	Entity entity;
+	
+	Texture enemyTexture;
+	Enemy enemy;
+	
 	float playerX, playerY, bgX, bgY;
 	float playerSpeed = 5f;
 	BitmapFont font;
@@ -54,6 +58,7 @@ public class DistressGame extends ApplicationAdapter {
 	ArrayList <String> CollisionList= new ArrayList<String>(2);
 	long elapsedTime;
 	float elapsedTimeInSeconds;
+	private boolean isPaused; //! to be added in game rule
 	HUD hud;
 	
 
@@ -107,13 +112,17 @@ public class DistressGame extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		float viewWidth = Gdx.graphics.getWidth();
 		float viewHeight = Gdx.graphics.getHeight();
+
+		
 		
 		playTexture = new Texture("idle.png");
 		player = new Player(playTexture, viewWidth, viewHeight, world);
 
-		whoTexture= new Texture("move.png");
+		whoTexture= new Texture("idle.png");
 		entity = new Entity(whoTexture, scaleToWorld(3), scaleToWorld(4), world, false, "NullEntity");
 		
+		enemyTexture = new Texture("move.png");
+		enemy = new Enemy(enemyTexture, 40, 50, 75, 100, 10, world, player);
 		//player = new Sprite(new Texture("idle.png"));
 		//player.setPosition(viewWidth / 2 - player.getWidth() / 2, viewHeight / 2 - player.getHeight() / 2);
 		//playerX = viewWidth / 2 - player.getWidth() / 2;
@@ -148,6 +157,7 @@ public class DistressGame extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+		if(!isPaused){
 		world.step((Gdx.graphics.getDeltaTime()), 6, 2);
 		elapsedTime = TimeUtils.timeSinceMillis(startTime);
 		elapsedTimeInSeconds = elapsedTime / 1000f;
@@ -155,6 +165,7 @@ public class DistressGame extends ApplicationAdapter {
 
 		handleInput();
 		player.update();
+		
 		
 
 		cam.position.set(Math.round(player.getPosition().x), Math.round(player.getPosition().y), 0);
@@ -169,13 +180,18 @@ public class DistressGame extends ApplicationAdapter {
 
 		// Draw the repeating tile to fill the screen
 		batch.draw(tile, 0, 0, Gdx.graphics.getWidth()*scale, Gdx.graphics.getHeight()*scale);
-
+		enemy.update(Gdx.graphics.getDeltaTime(), batch);
 		// Draw the player at the center of the screen
+		//enemy.draw(batch);
 		player.draw(batch);
 		entity.draw(batch, 0, 0);
 		batch.end();
 		debugRenderer.render(world, cam.combined);
 		hud.update((int) elapsedTimeInSeconds);
+	}
+		if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
+			resume();
+		}
 	}
 
 	private void scaleSprites(Sprite sprite) {
@@ -214,6 +230,9 @@ public class DistressGame extends ApplicationAdapter {
 	
 	
 	private void handleInput() {
+		boolean isWindowed = false;
+		int width = Gdx.graphics.getWidth()-2; // Set this to your desired window width
+		int height = Gdx.graphics.getHeight()-2;
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			//playerY += playerSpeed;
 			//cam.translate(0, (player.getPlayerSpeed()), 0);
@@ -233,10 +252,13 @@ public class DistressGame extends ApplicationAdapter {
 		//label.setText(playerX + "," a+ playerY);
 		if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
 			pause();
-			cam.zoom = scale;
-			int width = Gdx.graphics.getWidth()-2; // Set this to your desired window width
-			int height = Gdx.graphics.getHeight()-2; 
-			Gdx.graphics.setWindowedMode(width, height);
+			
+			// if(!isWindowed){
+				 
+			// 	Gdx.graphics.setWindowedMode(width, height);
+			// 	//cam.zoom = scale;
+			// 	isWindowed = true;
+			// }
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
 			resume();
@@ -249,17 +271,20 @@ public class DistressGame extends ApplicationAdapter {
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.F11)){
 			Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+			isWindowed = false;
 		}
 	}
 
 	@Override
 	public void pause() {
 		super.pause();
+		isPaused = true;
 	}
 
 	@Override
 	public void resume() {
 		super.resume();
+		isPaused = false;
 	}
 
 	@Override

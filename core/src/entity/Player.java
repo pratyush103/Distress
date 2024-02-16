@@ -12,6 +12,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.ai.steer.Steerable;
+import com.badlogic.gdx.ai.utils.Location;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -20,7 +22,7 @@ import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.World;
 
 
-public class Player extends Entity{
+public class Player extends Entity implements Steerable<Vector2>{
 	float playerX, playerY;
     Vector2 playerPosition;
 	float playerSpeed;
@@ -30,8 +32,9 @@ public class Player extends Entity{
 	Label.LabelStyle labelStyle;
 	Label label;
     Vector2 position;
-    Texture playerTexture = new Texture("idle.png");
+    //Texture playerTexture = new Texture("idle.png");
     int score;
+    private boolean isTagged;
     public Player(Texture playerTexture,float viewWidth, float viewHeight, World world){
         
         
@@ -119,8 +122,10 @@ public class Player extends Entity{
     public float getPlayerSpeed(){
         return playerSpeed;
     }
+    
+    @Override
     public Vector2 getPosition(){
-        return position;
+        return playerPosition;
     }
     public int getPlayerHealth() {
         return playerHealth;
@@ -128,17 +133,125 @@ public class Player extends Entity{
     public void setPlayerHealth(int playerHealth) {
         this.playerHealth = playerHealth;
     }
-    public void takeDamage(int damage){
-        playerHealth -= damage;
+    private long lastDamageTime = 0;
+    private static final long DAMAGE_COOLDOWN = 500; // 500 milliseconds
+
+    public void takeDamage(int damage) {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastDamageTime >= DAMAGE_COOLDOWN) {
+            playerHealth -= damage;
+            if (playerHealth < 0) {
+                playerHealth = 0;
+            }
+            lastDamageTime = currentTime;
+        }
     }
+
     @Override
-    public void CollisionHandler(Entity entity){
+    public void CollisionHandler(Entity entity) {
         super.CollisionHandler(entity);
-        if(entity.body.getUserData()=="enemy"){
+        if (entity.body.getUserData() == "enemy") {
             takeDamage(((Enemy) entity).getCollisionDamage());
         }
-        
-
     }
+
+
+    // Implementing the missing abstract methods
+    @Override
+    public Location<Vector2> newLocation() {
+        return null;
+    }
+
+    @Override
+    public float getOrientation() {
+        return 0;
+    }
+
+    @Override
+    public void setOrientation(float orientation) {
+    }
+
+    
+    public float vectorToAngle(Vector2 vector) {
+        return 0;
+    }
+
+    @Override
+    public Vector2 angleToVector(Vector2 outVector, float angle) {
+        return null;
+    }
+
+    @Override
+    public float getMaxAngularSpeed() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxAngularSpeed(float maxAngularSpeed) {
+    }
+
+    @Override
+    public float getMaxAngularAcceleration() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxAngularAcceleration(float maxAngularAcceleration) {
+    }
+
+    @Override
+    public float getMaxLinearSpeed() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxLinearSpeed(float maxLinearSpeed) {
+    }
+
+    @Override
+    public float getMaxLinearAcceleration() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxLinearAcceleration(float maxLinearAcceleration) {
+        // Implement the logic for setting the maximum linear acceleration
+    }
+    
+
+    @Override
+    public float getBoundingRadius() {
+        return this.getWidth()/2;
+    }
+
+    @Override
+    public boolean isTagged() {
+        return isTagged;
+    }
+
+    @Override
+    public void setTagged(boolean tagged) {
+        this.isTagged = tagged;
+    }
+
+    @Override
+    public Vector2 getLinearVelocity() {
+        return this.body.getLinearVelocity();
+    }
+
+    @Override
+    public float getAngularVelocity() {
+        return this.body.getAngularVelocity();
+    }
+
+    @Override
+    public float getZeroLinearSpeedThreshold() {
+        return this.body.getLinearVelocity().len();
+    }
+
+    @Override
+    public void setZeroLinearSpeedThreshold(float value) {
+    }
+
 
 }
