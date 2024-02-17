@@ -11,6 +11,10 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.math.MathUtils;
 import java.util.HashMap;
+
+// TODO: Implement an Object to store additional data in the setUserData method
+//! Current Implementation: String entityName and Typecast to String in the getEntity method
+
 public class Entity {
     Sprite sprite;
     float x,y;
@@ -18,6 +22,7 @@ public class Entity {
     Body body;
     private float scale = 0.3f;
     public static HashMap<String, Entity> entityList = new HashMap<String, Entity>();
+    public static World world;
     /**
      * Represents an entity in the game world.
      * An entity has a position, a sprite, and a physical body.
@@ -25,6 +30,7 @@ public class Entity {
     public Entity(Texture texture, float posX,float posY, World world, boolean isDynamic,String entityName){
         x=posX;
         y=posY;
+        this.world=world;
         sprite= new Sprite(texture);
         sprite.setPosition(x,y);
         sprite.setScale(scale);
@@ -89,6 +95,13 @@ public class Entity {
     public void setHeight(float height) {
         sprite.setSize(sprite.getWidth(), height);
     }
+    public static void destroyEntityBody(Body body) {
+        // Ensure we are not updating the world
+        // Box2D does not allow bodies to be destroyed during an update
+        if (!world.isLocked()) {
+            world.destroyBody(body);
+        }
+    }
 
     public void dispose() {
         sprite.getTexture().dispose();
@@ -106,9 +119,14 @@ public class Entity {
         return entityList.get(entityName);
     }
     public static void removeEntity(String entityName){
+        Entity entity = getEntity(entityName);
+        entity.dispose();        
+        destroyEntityBody(entity.body);
+        entity=null;
         entityList.remove(entityName);
 
     }
+
     
 
     //float speed, x, y;

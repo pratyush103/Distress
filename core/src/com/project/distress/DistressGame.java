@@ -122,7 +122,7 @@ public class DistressGame extends ApplicationAdapter {
 		entity = new Entity(whoTexture, scaleToWorld(3), scaleToWorld(4), world, false, "NullEntity");
 		
 		enemyTexture = new Texture("move.png");
-		enemy = new Enemy(enemyTexture, 40, 50, 75, 100, 10, world, player);
+		enemy = new Enemy(enemyTexture, 40, 50, 75, 100, 10, world, player,"");
 		//player = new Sprite(new Texture("idle.png"));
 		//player.setPosition(viewWidth / 2 - player.getWidth() / 2, viewHeight / 2 - player.getHeight() / 2);
 		//playerX = viewWidth / 2 - player.getWidth() / 2;

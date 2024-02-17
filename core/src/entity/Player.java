@@ -150,7 +150,9 @@ public class Player extends Entity implements Steerable<Vector2>{
     @Override
     public void CollisionHandler(Entity entity) {
         super.CollisionHandler(entity);
-        if (entity.body.getUserData() == "enemy") {
+        //TODO: Temporary Implementation better use any other java Object to store userdata 
+        String userData =(String) entity.body.getUserData(); 
+        if (userData.contains("enemy")) {
             takeDamage(((Enemy) entity).getCollisionDamage());
         }
     }

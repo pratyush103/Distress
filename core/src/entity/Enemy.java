@@ -22,13 +22,14 @@ public class Enemy extends Entity implements Steerable<Vector2>{
     float enemySpeed;
     int enemyHealth;
     int enemyCollisionDamage;
+    String enemyName;
     //Texture enemyTexture;
     SteeringBehavior<Vector2> behavior;
     public static Player player;
 
-    public Enemy(Texture enemyTexture, float x, float y, float speed, int health, int collisionDamage,World world, Player player) {
-        super(enemyTexture, x, y,world, true, "enemy");
-        
+    public Enemy(Texture enemyTexture, float x, float y, float speed, int health, int collisionDamage,World world, Player player,String enemyModifier) {
+        super(enemyTexture, x, y,world, true, "enemy"+enemyModifier);
+        enemyName = "enemy"+enemyModifier;
         Enemy.player = player;
         
         enemyX = x;
@@ -76,6 +77,10 @@ public class Enemy extends Entity implements Steerable<Vector2>{
     
     public void draw(SpriteBatch batch) {
         super.draw(batch, enemyPosition.x, enemyPosition.y);
+    }
+
+    public void killEnemy() {
+        removeEntity(enemyName);    
     }
 
     // Implementing the missing abstract methods
