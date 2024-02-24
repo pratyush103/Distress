@@ -1,0 +1,17 @@
+The ConcurrentModificationException is thrown when you try to modify a collection while iterating over it. In your case, you're iterating over Projectile.projectileList and within the update method of Projectile, you're potentially removing elements from the same list.
+
+To avoid this, you can iterate over a copy of the list, or use an Iterator to safely remove elements while iterating. Here's how you can do it with an Iterator:
+
+In this code, isMarkedForRemoval() is a method that returns true if the projectile is marked for removal. getProjectileId() and getProjectileName() are methods that return the ID and name of the projectile, respectively. You'll need to add these methods to your Projectile class if they don't already exist.
+
+Iterator<Projectile> iterator = Projectile.projectileList.iterator();
+while (iterator.hasNext()) {
+    Projectile projectile = iterator.next();
+    projectile.update(batch);
+    projectile.draw(batch);
+    if (projectile.isMarkedForRemoval()) {
+        iterator.remove();
+        player.removeBullet(projectile.getProjectileId());
+        projectile.removeEntity(projectile.getProjectileName());
+    }
+}

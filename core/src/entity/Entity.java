@@ -112,7 +112,7 @@ public class Entity {
     public void CollisionHandler(Entity entity){
         //Override this method in the subclass
         //*Contains a useful piece of code */
-        System.out.println("Collision detected with " + entity.getClass().getName());
+        //System.out.println("Collision detected with " + entity.getClass().getName());
     }
 
     public static Entity getEntity(String entityName){
@@ -123,9 +123,11 @@ public class Entity {
         entity.dispose();        
         destroyEntityBody(entity.body);
         entity=null;
+        System.err.println("Entity " + entityName + " has been removed from the game world");
         entityList.remove(entityName);
 
     }
+    
 
     
 

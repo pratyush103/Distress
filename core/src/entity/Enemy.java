@@ -80,7 +80,14 @@ public class Enemy extends Entity implements Steerable<Vector2>{
     }
 
     public void killEnemy() {
-        removeEntity(enemyName);    
+        removeEntity(this.enemyName);     
+    }
+
+    public void takeDamage(int damage) {
+        enemyHealth -= damage;
+        if (enemyHealth <= 0) {
+            killEnemy();
+        }
     }
 
     // Implementing the missing abstract methods

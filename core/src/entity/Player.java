@@ -1,5 +1,7 @@
 package entity;
 
+import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.Vector;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -20,6 +22,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.World;
+import java.util.Queue;
 
 
 public class Player extends Entity implements Steerable<Vector2>{
@@ -34,6 +37,9 @@ public class Player extends Entity implements Steerable<Vector2>{
     Vector2 position;
     //Texture playerTexture = new Texture("idle.png");
     int score;
+    private Hashtable<Integer, Projectile> projectileHashtable;
+    private Queue<Integer> availableBulletIds;
+    
     private boolean isTagged;
     public Player(Texture playerTexture,float viewWidth, float viewHeight, World world){
         
@@ -54,6 +60,12 @@ public class Player extends Entity implements Steerable<Vector2>{
         labelStyle.fontColor = color;
         label = new Label(playerPosition.x + "," + playerPosition.y, labelStyle);
         score = 0;
+
+        this.projectileHashtable = new Hashtable<>();
+        this.availableBulletIds = new LinkedList<>();
+        for (int i = 1; i <= 100; i++) {
+            availableBulletIds.add(i);
+        }
 
     }
     public void draw(SpriteBatch batch) {
@@ -101,6 +113,7 @@ public class Player extends Entity implements Steerable<Vector2>{
         body.setTransform(playerPosition.x, playerPosition.y, 0);
         label.setText(playerPosition.x + "," + playerPosition.y);
         label.setPosition(playerPosition.x, playerPosition.y);
+        
     }
     
     public int getScore(){
@@ -157,6 +170,29 @@ public class Player extends Entity implements Steerable<Vector2>{
         }
     }
 
+    public void increaseScore(int score) {
+        this.score += score;
+    }
+
+    public void fireWeapon(Vector2 direction) {
+        if (!availableBulletIds.isEmpty()) {
+            int id = availableBulletIds.poll();
+            // Create your bullet here and add it to the bullets list
+            Projectile projectile = new Projectile(new Texture("basic_proj.png"), playerPosition.x, playerPosition.y, 5, 10, world, this, direction, "-player"+id, id);
+            projectileHashtable.put(id, projectile);
+        } else {
+            System.out.println("Maximum number of bullets reached.");
+        }
+    }
+
+    public void removeBullet(int id) {
+        if (projectileHashtable.containsKey(id)) {
+            projectileHashtable.remove(id);
+            availableBulletIds.add(id);
+        }
+    }
+
+    
 
     // Implementing the missing abstract methods
     @Override

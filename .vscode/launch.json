@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "DesktopLauncher",
+            "request": "launch",
+            "mainClass": "com.project.distress.DesktopLauncher",
+            "projectName": "Distress-desktop"
+        },
+        {
+            "type": "java",
+            "name": "IOSLauncher",
+            "request": "launch",
+            "mainClass": "com.project.distress.IOSLauncher",
+            "projectName": "Distress-ios"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Attach) - Remote",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 5005
+        }
+    ]
+}

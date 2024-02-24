@@ -17,6 +17,8 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -32,7 +34,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.TimeUtils;
 
 
-public class DistressGame extends ApplicationAdapter {
+public class DistressGame extends ApplicationAdapter implements InputProcessor{
 	SpriteBatch batch;
 	Texture tile;
 	Texture playTexture;
@@ -44,6 +46,7 @@ public class DistressGame extends ApplicationAdapter {
 	
 	Texture enemyTexture;
 	Enemy enemy;
+	Enemy enemy2;
 	
 	float playerX, playerY, bgX, bgY;
 	float playerSpeed = 5f;
@@ -64,6 +67,7 @@ public class DistressGame extends ApplicationAdapter {
 
 	@Override
 	public void create() {
+        Gdx.input.setInputProcessor(this);
 		Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 		startTime = TimeUtils.millis();
 		Box2D.init();
@@ -115,14 +119,15 @@ public class DistressGame extends ApplicationAdapter {
 
 		
 		
-		playTexture = new Texture("idle.png");
+		playTexture = new Texture("idle2.png");
 		player = new Player(playTexture, viewWidth, viewHeight, world);
 
-		whoTexture= new Texture("idle.png");
+		whoTexture= new Texture("basic_proj.png");
 		entity = new Entity(whoTexture, scaleToWorld(3), scaleToWorld(4), world, false, "NullEntity");
 		
 		enemyTexture = new Texture("move.png");
 		enemy = new Enemy(enemyTexture, 40, 50, 75, 100, 10, world, player,"");
+		enemy2= new Enemy(enemyTexture, 60, 80, 75, 100, 10, world, player,"2");
 		//player = new Sprite(new Texture("idle.png"));
 		//player.setPosition(viewWidth / 2 - player.getWidth() / 2, viewHeight / 2 - player.getHeight() / 2);
 		//playerX = viewWidth / 2 - player.getWidth() / 2;
@@ -181,10 +186,24 @@ public class DistressGame extends ApplicationAdapter {
 		// Draw the repeating tile to fill the screen
 		batch.draw(tile, 0, 0, Gdx.graphics.getWidth()*scale, Gdx.graphics.getHeight()*scale);
 		enemy.update(Gdx.graphics.getDeltaTime(), batch);
+		enemy2.update(Gdx.graphics.getDeltaTime(), batch);
 		// Draw the player at the center of the screen
 		//enemy.draw(batch);
 		player.draw(batch);
 		entity.draw(batch, 0, 0);
+
+		Iterator<Projectile> iterator = Projectile.projectileList.iterator();
+		while (iterator.hasNext()) {
+			Projectile projectile = iterator.next();
+			projectile.update(batch);
+			projectile.draw(batch);
+			if (projectile.isMarkedForRemoval()) {
+				iterator.remove();
+				player.removeBullet(projectile.getProjectileId());
+				projectile.removeEntity(projectile.getProjectileName());
+			}
+}
+
 		batch.end();
 		debugRenderer.render(world, cam.combined);
 		hud.update((int) elapsedTimeInSeconds);
@@ -274,6 +293,8 @@ public class DistressGame extends ApplicationAdapter {
 			isWindowed = false;
 		}
 	}
+	
+		
 
 	@Override
 	public void pause() {
@@ -304,4 +325,87 @@ public class DistressGame extends ApplicationAdapter {
 		cam.update();
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 	}
+
+
+	//*  InputProcessor methods */
+	//TODO : Maybe add in Gamerule
+
+	@Override
+	public boolean keyDown (int keycode){
+		return false;
+	
+	
+	}
+
+	@Override
+	public boolean keyUp (int keycode){
+		return false;
+	
+	}
+
+	@Override
+	public boolean keyTyped (char character){
+		return false;
+	
+	}
+
+	@Override
+	public boolean touchDown (int screenX, int screenY, int pointer, int button){
+		// Check if player is null
+		if (this.player == null) {
+			System.out.println("Player is null");
+			return false;
+		}
+	
+		// Get player position
+		Vector2 playerPosition = player.getPosition();
+	
+		// Check if player position is null
+		if (playerPosition == null) {
+			System.out.println("Player position is null");
+			return false;
+		}
+	
+		// Convert the y-coordinate from screen coordinates to game coordinates
+		int gameY = Gdx.graphics.getHeight() - screenY;
+	
+		// Calculate the direction vector
+		Vector2 direction = new Vector2(screenX - player.getPosition().x, gameY - player.getPosition().y);
+	
+		// Fire weapon
+		player.fireWeapon(direction);
+	
+		return true;
+	}
+
+	@Override
+	public boolean touchUp (int screenX, int screenY, int pointer, int button){
+		return false;
+	
+	}
+
+	@Override
+	public boolean touchCancelled (int screenX, int screenY, int pointer, int button){
+		return false;
+	
+	}
+
+	@Override
+	public boolean touchDragged (int screenX, int screenY, int pointer)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean mouseMoved (int screenX, int screenY)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean scrolled (float amountX, float amountY)
+	{
+		return false;
+	}
 }
+
