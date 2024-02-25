@@ -2,32 +2,23 @@ package entity;
 
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Vector;
-
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ai.steer.Steerable;
 import com.badlogic.gdx.ai.utils.Location;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.World;
 import java.util.Queue;
 
 
 public class Player extends Entity implements Steerable<Vector2>{
-	float playerX, playerY;
-    Vector2 playerPosition;
+	private float playerX, playerY;
+    private Vector2 playerPosition;
 	float playerSpeed;
     int playerHealth;
 	BitmapFont font;
@@ -165,8 +156,11 @@ public class Player extends Entity implements Steerable<Vector2>{
         super.CollisionHandler(entity);
         //TODO: Temporary Implementation better use any other java Object to store userdata 
         String userData =(String) entity.body.getUserData(); 
-        if (userData.contains("enemy")) {
+        if (entity instanceof Enemy) {
             takeDamage(((Enemy) entity).getCollisionDamage());
+        }
+        else if (userData.contains("user")) {
+            // This is a bullet fired by the player, so ignore it
         }
     }
 
@@ -178,7 +172,18 @@ public class Player extends Entity implements Steerable<Vector2>{
         if (!availableBulletIds.isEmpty()) {
             int id = availableBulletIds.poll();
             // Create your bullet here and add it to the bullets list
-            Projectile projectile = new Projectile(new Texture("basic_proj.png"), playerPosition.x, playerPosition.y, 5, 10, world, this, direction, "-player"+id, id);
+            // Assuming playerWidth is the width of the player and additionalDistance is the additional distance you want the bullet to spawn from the player
+            float playerWidth = this.sprite.getWidth()/2;
+            float additionalDistance = 1;
+
+            // Calculate the offset
+            Vector2 offset = new Vector2(direction).nor().scl(playerWidth + additionalDistance);
+
+            // Calculate the spawn position
+            Vector2 spawnPosition = new Vector2(playerPosition).add(offset);
+
+            // Create the bullet
+            Projectile projectile = new Projectile(new Texture("basic_proj22.png"), spawnPosition.x, spawnPosition.y, 10, 10, world, this, direction, "-user"+id, id);
             projectileHashtable.put(id, projectile);
         } else {
             System.out.println("Maximum number of bullets reached.");

@@ -54,7 +54,14 @@ public class Enemy extends Entity implements Steerable<Vector2>{
         return enemyCollisionDamage;
     }
 
-    public void update(float deltaTime,SpriteBatch batch) {
+    public void handleCollision(Entity entity) {
+        if (entity instanceof Enemy) {
+            // Do nothing
+        }
+        
+    }
+
+    public void update(SpriteBatch batch) {
         // Calculate the steering acceleration
         SteeringAcceleration<Vector2> steering = new SteeringAcceleration<>(new Vector2());
         behavior.calculateSteering(steering);
@@ -80,7 +87,7 @@ public class Enemy extends Entity implements Steerable<Vector2>{
     }
 
     public void killEnemy() {
-        removeEntity(this.enemyName);     
+        markForRemoval(this.enemyName);     
     }
 
     public void takeDamage(int damage) {

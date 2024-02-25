@@ -24,7 +24,7 @@ public class Projectile extends Entity {
     int projectileId;
     public static ArrayList<Projectile> projectileList = new ArrayList<Projectile>();
     //Texture projectileTexture;
-    private boolean isMarkedForRemoval = false;
+    //private boolean isMarkedForRemoval = false;
     public static Player player;
 
     public Projectile(Texture projectileTexture, float x, float y, float speed, int damage,World world, Player player,Vector2 direction,String projectileModifier, int projectileId) {
@@ -44,26 +44,28 @@ public class Projectile extends Entity {
         this.direction = direction;
         projectileRotationAngle = (float) Math.toDegrees(Math.atan2(direction.y, direction.x));
         body.setTransform(projectilePosition.x, projectilePosition.y, projectileRotationAngle);
-        
+        body.setFixedRotation(true);
         projectileList.add(this);
     }
 
     public void update(SpriteBatch batch) {
         Vector2 lastPos= new Vector2(projectilePosition.x, projectilePosition.y);
         // Move the bullet in its direction at its speed
-        body.setLinearVelocity(direction.scl(projectileSpeed));
+        body.applyLinearImpulse(direction.scl(projectileSpeed), body.getWorldCenter(), true);
         
         distanceTravelled = distanceTravelled+lastPos.dst(projectilePosition);
         
         if (distanceTravelled>20){
             this.killBullet();
         }
-        if (isMarkedForRemoval) {
-            player.removeBullet(this.projectileId);
-            projectileList.remove(this);
-            removeEntity(this.projectileName);
-        }
+        // if (isMarkedForRemoval) {
+        //     player.removeBullet(this.projectileId);
+        //     projectileList.remove(this);
+        //     //removeEntity(this.projectileName);
+        //     markForRemoval(this.projectileName);
+        // }
         
+
 
 
     }
@@ -79,14 +81,15 @@ public class Projectile extends Entity {
     public void CollisionHandler(Entity entity) {
         // Check for collision with an enemy
         String userData =(String) entity.body.getUserData();
-        if (userData.contains("enemy")) {
+        if (entity instanceof Enemy) {
             ((Enemy) entity).takeDamage(projectileDamage);
             this.killBullet();
         }
     }
 
     public void killBullet() {
-
-        isMarkedForRemoval = true;
+        player.removeBullet(this.projectileId);
+        projectileList.remove(this);
+        markForRemoval(this.projectileName);
     }
 }

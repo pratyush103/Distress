@@ -1,8 +1,5 @@
 package com.project.distress;
 
-import java.util.ArrayList;
-import java.util.Vector;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -32,6 +29,7 @@ import entity.*;
 import Screens.*;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.TimeUtils;
+import java.util.*;
 
 
 public class DistressGame extends ApplicationAdapter implements InputProcessor{
@@ -97,7 +95,7 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 
 			@Override
 			public void preSolve(Contact contact, Manifold oldManifold) {
-				System.out.println("Pre Solve");
+				//System.out.println("Pre Solve");
 				contact.setEnabled(true);
 				contact.setFriction(scale*0.5f); // Change the friction
 				contact.setRestitution(scale); // Change the restitution
@@ -106,7 +104,7 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 
 			@Override
 			public void postSolve(Contact contact, ContactImpulse impulse) {
-				System.out.println("Post Solve");
+				//System.out.println("Post Solve");
 			}
 		});
 
@@ -119,7 +117,7 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 
 		
 		
-		playTexture = new Texture("idle2.png");
+		playTexture = new Texture("idle22.png");
 		player = new Player(playTexture, viewWidth, viewHeight, world);
 
 		whoTexture= new Texture("basic_proj.png");
@@ -185,8 +183,8 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 
 		// Draw the repeating tile to fill the screen
 		batch.draw(tile, 0, 0, Gdx.graphics.getWidth()*scale, Gdx.graphics.getHeight()*scale);
-		enemy.update(Gdx.graphics.getDeltaTime(), batch);
-		enemy2.update(Gdx.graphics.getDeltaTime(), batch);
+		enemy.update(batch);
+		enemy2.update( batch);
 		// Draw the player at the center of the screen
 		//enemy.draw(batch);
 		player.draw(batch);
@@ -197,17 +195,21 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 			Projectile projectile = iterator.next();
 			projectile.update(batch);
 			projectile.draw(batch);
-			if (projectile.isMarkedForRemoval()) {
-				iterator.remove();
-				player.removeBullet(projectile.getProjectileId());
-				projectile.removeEntity(projectile.getProjectileName());
-			}
-}
+		}
 
 		batch.end();
+
+		if(Entity.isRemovable()){
+			Entity.removeEntity();
+		}
+		
+
 		debugRenderer.render(world, cam.combined);
 		hud.update((int) elapsedTimeInSeconds);
 	}
+		
+		
+
 		if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
 			resume();
 		}
@@ -222,25 +224,54 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
         return new Vector2(worldCoordinates.x * scale, worldCoordinates.y * scale);
     }
 
+	// void handleCollision() {
+	// 	int i = 0;
+	// 	int j= CollisionList.size()-1;
+	// 	Entity entity1;
+	// 	Entity entity2;
+
+	// 	while (i<= CollisionList.size()-1 && j>=0){
+	// 		try {
+	// 			entity1= Entity.getEntity(CollisionList.get(i));
+	// 			entity2= Entity.getEntity(CollisionList.get(j));
+
+	// 			entity1.CollisionHandler(entity2);
+	// 		} catch (Exception e) {
+				
+	// 			continue;
+	// 		}
+	// 		i++;
+	// 		j--;
+	// 	}
+	// }
+
 	void handleCollision() {
 		int i = 0;
 		int j= CollisionList.size()-1;
 		Entity entity1;
 		Entity entity2;
 
-		while (i<= CollisionList.size()-1 && j>=0){
+		
 			try {
-				entity1= Entity.getEntity(CollisionList.get(i));
-				entity2= Entity.getEntity(CollisionList.get(j));
+				entity1 = Entity.getEntity(CollisionList.get(i));
+				entity2 = Entity.getEntity(CollisionList.get(j));
+
+				if (entity1 != null && entity2 != null) {
+					if (entity1.getBody().getFixtureList().get(0).isSensor() && !entity1.getBody().getFixtureList().get(0).isSensor() ) {
+						entity1.CollisionHandler(entity2);
+					} else if (entity2.getBody().getFixtureList().get(0).isSensor() && !entity2.getBody().getFixtureList().get(0).isSensor()) {
+						entity2.CollisionHandler(entity1);
+					} else {
+						entity1.CollisionHandler(entity2);
+						entity2.CollisionHandler(entity1);
+					}
+				}
 
 				entity1.CollisionHandler(entity2);
 			} catch (Exception e) {
-				
-				continue;
+				System.err.println();
 			}
-			i++;
-			j--;
-		}
+			
 	}
 
 	private float scaleToWorld(float value) {
@@ -252,6 +283,7 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 		boolean isWindowed = false;
 		int width = Gdx.graphics.getWidth()-2; // Set this to your desired window width
 		int height = Gdx.graphics.getHeight()-2;
+		int logno = 0;
 		if (Gdx.input.isKeyPressed(Input.Keys.W)) {
 			//playerY += playerSpeed;
 			//cam.translate(0, (player.getPlayerSpeed()), 0);
@@ -268,6 +300,19 @@ public class DistressGame extends ApplicationAdapter implements InputProcessor{
 			//playerX += playerSpeed;
 			//cam.translate((player.getPlayerSpeed()), 0, 0);
 		}
+		if(Gdx.input.isKeyPressed(Input.Keys.Z)){
+				System.out.println("-----------------------Log: " + (logno++)+ "-----------------------");
+				for (Entity entity : Entity.entityList.values()) {
+					System.out.println("Entity: " + entity);
+					System.out.println("EntityData: " + entity.getBody().getUserData());
+					
+					// Print additional information about the entity here.
+					// The exact code depends on the methods available in your Entity class.
+				}
+				System.out.println("Position: " + player.getPosition());
+
+		}
+		
 		//label.setText(playerX + "," a+ playerY);
 		if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
 			pause();
