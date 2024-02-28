@@ -30,13 +30,14 @@ public class Player extends Entity implements Steerable<Vector2>{
     int score;
     private Hashtable<Integer, Projectile> projectileHashtable;
     private Queue<Integer> availableBulletIds;
+    Texture bulletTexture;
     
     private boolean isTagged;
     public Player(Texture playerTexture,float viewWidth, float viewHeight, World world){
         
         
         super(playerTexture, 0, 0, world, true, "player");
-        
+        bulletTexture = new Texture("basic_proj22.png");
 		playerX = scaleToWorld(viewWidth / 2 - super.getWidth() / 2);
 		playerY = scaleToWorld(viewHeight / 2 - super.getHeight() / 2);
         playerPosition = new Vector2(playerX, playerY);
@@ -183,7 +184,7 @@ public class Player extends Entity implements Steerable<Vector2>{
             Vector2 spawnPosition = new Vector2(playerPosition).add(offset);
 
             // Create the bullet
-            Projectile projectile = new Projectile(new Texture("basic_proj22.png"), spawnPosition.x, spawnPosition.y, 10, 10, world, this, direction, "-user"+id, id);
+            Projectile projectile = new Projectile(bulletTexture, spawnPosition.x, spawnPosition.y, 10, 10, world, this, direction, "-user"+id, id);
             projectileHashtable.put(id, projectile);
         } else {
             System.out.println("Maximum number of bullets reached.");

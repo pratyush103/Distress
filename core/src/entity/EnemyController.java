@@ -19,6 +19,7 @@ public class EnemyController {
 
     public EnemyController(Player player, World world) {
         this.player = player;
+        enemyTexture = new Texture("move.png");
         this.enemies = new Hashtable<>();
         this.availableIds = new LinkedList<>();
         for (int i = 1; i <= 100; i++) {
@@ -42,8 +43,8 @@ public class EnemyController {
             float y = player.getPosition().y + spawnRadius * (float) Math.sin(angle);
 
             // Create your enemy here and add it to the enemies list
-            Enemy enemy = new Enemy(,x, y, 5, 100, 10, world, player, ""+id);
-            enemy.setName("enemy" + id);
+            Enemy enemy = new Enemy(enemyTexture,x, y, 5, 100, 10, Entity.world, player, ""+id);
+            enemy.enemyName = "enemy" + id;
             enemies.put(id, enemy);
         } else {
             System.out.println("Maximum number of enemies reached.");
@@ -52,7 +53,7 @@ public class EnemyController {
 
     public void killEnemy(int id) {
         if (enemies.containsKey(id)) {
-            enemies.remove(id);
+            enemies.remove(id).dispose();
             availableIds.add(id);
         }
     }
