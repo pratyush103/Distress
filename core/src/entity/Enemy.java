@@ -46,8 +46,7 @@ public class Enemy extends Entity implements Steerable<Vector2>{
     
 
     public float getPlayerDistance(){
-        float distance=(float) Math.sqrt(Math.pow(player.getPosition().x-enemyPosition.x,2)+Math.pow(player.getPosition().y-enemyPosition.y,2));
-        return distance;        
+        return player.getPosition().dst(enemyPosition);
 
     }
     public int getCollisionDamage() {
@@ -197,7 +196,4 @@ public class Enemy extends Entity implements Steerable<Vector2>{
     @Override
     public void setZeroLinearSpeedThreshold(float value) {
     }
-
-    
-
 }

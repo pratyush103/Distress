@@ -19,7 +19,6 @@ import java.util.*;
 public class Entity {
     Sprite sprite;
     float x,y;
-    SpriteBatch batch;
     Body body;
     private float scale = 0.3f;
     public static HashMap<String, Entity> entityList = new HashMap<String, Entity>();
@@ -32,7 +31,7 @@ public class Entity {
     public Entity(Texture texture, float posX,float posY, World world, boolean isDynamic,String entityName){
         x=posX;
         y=posY;
-        this.world=world;
+        Entity.world = world;
         sprite= new Sprite(texture);
         sprite.setPosition(x,y);
         sprite.setScale(scale);

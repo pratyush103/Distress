@@ -49,11 +49,10 @@ public class Projectile extends Entity {
     }
 
     public void update(SpriteBatch batch) {
-        Vector2 lastPos= new Vector2(projectilePosition.x, projectilePosition.y);
         // Move the bullet in its direction at its speed
         body.applyLinearImpulse(direction.scl(projectileSpeed), body.getWorldCenter(), true);
         
-        distanceTravelled = distanceTravelled+lastPos.dst(projectilePosition);
+        distanceTravelled = distanceTravelled+origin.dst(projectilePosition);
         
         if (distanceTravelled>20){
             this.killBullet();
