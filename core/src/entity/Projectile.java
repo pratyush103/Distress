@@ -23,7 +23,7 @@ public class Projectile extends Entity {
     SpriteBatch batch;
     int projectileId;
     public static ArrayList<Projectile> projectileList = new ArrayList<Projectile>();
-    //Texture projectileTexture;
+    //Texture projectileTexture this prolly wont work;
     private boolean isMarkedForRemoval = false;
     public static Player player;
 
